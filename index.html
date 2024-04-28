@@ -1,5 +1,26 @@
 <html>
   <body>
-    <h1>hello todolist</h1>
+    <h1>To Do List</h1>
+    <input/>
+    <button>Add</button>
+    <ul></ul>
   </body>
+  <script>
+    const button = document.querySelector('button');
+    const input = document.querySelector('input');
+    const ul = document.querySelector('ul');
+    
+    ul.createItem = function(content) {
+      const li = document.createElement('li');
+      li.innerText = content;
+      this.appendChild(li);
+    }
+
+    button.onclick = function(e) {
+      const value = input.value;
+      if (value === '')
+        return alert('Please fill in!');
+      ul.createItem(value);
+    }
+  </script>
 </html>
