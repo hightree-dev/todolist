@@ -17,10 +17,38 @@
     }
 
     button.onclick = function(e) {
-      const value = input.value;
-      if (value === '')
+      const content = input.value;
+      if (content === '')
         return alert('Please fill in!');
-      ul.createItem(value);
+      let store = db.transaction('todos', 'readwrite').objectStore('todos');
+      let addReq = store.add({ content });
+      addReq.addEventListener('success', function(e) {
+          ul.createItem(content);
+      });
     }
+
+    let db = null;
+    const dbReq = indexedDB.open('db', 1);
+    dbReq.addEventListener('success', function(e) {
+      db = e.target.result;
+      let store = db.transaction('todos', 'readonly').objectStore('todos');
+      let getAllReq = store.getAll();
+      getAllReq.addEventListener('success', function(e) {
+        e.target.result.forEach(function(todo){
+          ul.createItem(todo.content);
+        });
+      })
+    });
+    dbReq.addEventListener('error', function(e) {
+      const error = e.target.error;
+      console.log('error', error.name);
+    });
+    dbReq.addEventListener('upgradeneeded', function(e) {
+      db = e.target.result;
+      let oldVersion = e.oldVersion;
+      if (oldVersion < 1) {
+        db.createObjectStore('todos', { keyPath: 'id', autoIncrement: true });
+      }
+    });
   </script>
 </html>
