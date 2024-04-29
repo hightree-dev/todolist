@@ -38,6 +38,7 @@
       let store = db.transaction('todos', 'readwrite').objectStore('todos');
       let addReq = store.add({ content });
       addReq.addEventListener('success', function(e) {
+          input.value = '';
           ul.createItem({id: ++curId, content });
       });
     }
