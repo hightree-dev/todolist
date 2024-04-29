@@ -10,9 +10,24 @@
     const input = document.querySelector('input');
     const ul = document.querySelector('ul');
     
-    ul.createItem = function(content) {
+    ul.createItem = function(todo) {
       const li = document.createElement('li');
-      li.innerText = content;
+      
+      const content = document.createElement('span');
+      content.innerText = todo.content;
+
+      const deleteButton = document.createElement('button');
+      deleteButton.innerText = 'delete';
+      deleteButton.onclick = function(e) {
+        let store = db.transaction('todos', 'readwrite').objectStore('todos');
+        let deleteReq = store.delete(todo.id);
+        deleteReq.addEventListener('success', function(e) {
+          li.remove();
+        })
+      }
+      
+      li.appendChild(content);
+      li.appendChild(deleteButton);
       this.appendChild(li);
     }
 
@@ -23,10 +38,11 @@
       let store = db.transaction('todos', 'readwrite').objectStore('todos');
       let addReq = store.add({ content });
       addReq.addEventListener('success', function(e) {
-          ul.createItem(content);
+          ul.createItem({id: ++curId, content });
       });
     }
 
+    let curId = null;
     let db = null;
     const dbReq = indexedDB.open('db', 1);
     dbReq.addEventListener('success', function(e) {
@@ -34,10 +50,12 @@
       let store = db.transaction('todos', 'readonly').objectStore('todos');
       let getAllReq = store.getAll();
       getAllReq.addEventListener('success', function(e) {
-        e.target.result.forEach(function(todo){
-          ul.createItem(todo.content);
+        const todos = e.target.result;
+        todos.forEach(function(todo){
+          ul.createItem(todo);
         });
-      })
+        curId = todos[todos.length - 1].id;
+      });
     });
     dbReq.addEventListener('error', function(e) {
       const error = e.target.error;
