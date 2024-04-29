@@ -5,6 +5,8 @@
     <button>Add</button>
     <ul></ul>
   </body>
+  <script src="//cdn.jsdelivr.net/npm/eruda"></script>
+  <script>eruda.init();</script>
   <script>
     const button = document.querySelector('button');
     const input = document.querySelector('input');
@@ -25,9 +27,32 @@
           li.remove();
         })
       }
+
+      const editButton = document.createElement('button');
+      editButton.innerText = 'edit';
+      editButton.onclick = function(e) {
+        this.toggleAttribute("edit");
+        if (this.hasAttribute('edit')) {
+          content.innerHTML = `<input value='${content.innerText}'/>`;
+          this.innerText = 'update';
+          return;
+        }
+        
+        const value = content.querySelector('input').value;
+        if (value === '')
+          return alert('Please fill in');
+
+        let store = db.transaction('todos', 'readwrite').objectStore('todos');
+        let putReq = store.put({ id: todo.id, content: value });
+        putReq.addEventListener('success', (e) => {
+          content.innerHTML = value;
+          this.innerText = 'edit';
+        });        
+      }
       
       li.appendChild(content);
       li.appendChild(deleteButton);
+      li.appendChild(editButton);
       this.appendChild(li);
     }
 
